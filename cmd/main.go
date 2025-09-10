@@ -19,10 +19,10 @@ func main() {
 	)
 	chatCompletion, err := client.Chat.Completions.New(context.Background(),
 		openai.ChatCompletionNewParams{
-			Model: "openai/gpt-oss-120b",
+			Model: "llama-3.1-8b-instant",
 			Messages: []openai.ChatCompletionMessageParamUnion{
-				openai.SystemMessage("You are a helpful assistant"),
-				openai.UserMessage("Can I call tools using gpt-oss-120b?"),
+				openai.SystemMessage("You are a helpful assistant that responds sucintly"),
+				openai.UserMessage("Can I call tools using you?"),
 			},
 		})
 	if err != nil {
