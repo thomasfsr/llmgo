@@ -11,20 +11,27 @@ import (
 	"github.com/PuerkitoBio/goquery"
 )
 
-func main() {
+// parseInt safely converts string → int
+func parseInt(s string) int {
+	if num, err := strconv.Atoi(strings.TrimSpace(s)); err == nil {
+		return num
+	}
+	return 0
+}
+
+// fetchRouteInfo scrapes one route and returns the report as a string
+func fetchRouteInfo(routeID string) (string, error) {
 	res, err := http.Get("https://semil.sp.gov.br/travessias/")
 	if err != nil {
-		log.Fatal(err)
+		return "", err
 	}
 	defer res.Body.Close()
 
 	doc, err := goquery.NewDocumentFromReader(res.Body)
 	if err != nil {
-		log.Fatal(err)
+		return "", err
 	}
 
-	// Extract data using specific IDs
-	routeID := "1951"
 	fromLocation := doc.Find(fmt.Sprintf("#menu-travessia-a-%s", routeID)).Text()
 	toLocation := doc.Find(fmt.Sprintf("#menu-travessia-b-%s", routeID)).Text()
 	timeFrom := parseInt(doc.Find(fmt.Sprintf("#menu-travMinutosA-%s", routeID)).Text())
@@ -33,20 +40,33 @@ func main() {
 	conditions := doc.Find(fmt.Sprintf("#menu-tempoClima-%s", routeID)).AttrOr("title", "Unknown")
 	routeTitle := doc.Find(fmt.Sprintf("#menu-title-%s", routeID)).AttrOr("title", "Unknown")
 
-	// Display results
-	fmt.Printf("=== DIRECT ID EXTRACTION ===\n")
-	fmt.Printf("Route: %s\n", routeTitle)
-	fmt.Printf("%s → %s: %d minutes\n", fromLocation, toLocation, timeFrom)
-	fmt.Printf("%s → %s: %d minutes\n", toLocation, fromLocation, timeTo)
-	fmt.Printf("Total time: %d minutes\n", timeFrom+timeTo)
-	fmt.Printf("Vessels: %d\n", vessels)
-	fmt.Printf("Weather: %s\n", conditions)
-	fmt.Printf("Updated: %s\n", time.Now().Format("15:04:05"))
+	// Build a string instead of printing
+	report := fmt.Sprintf(
+		`=== DIRECT ID EXTRACTION ===
+Route: %s
+%s → %s: %d minutes
+%s → %s: %d minutes
+Total time: %d minutes
+Vessels: %d
+Weather: %s
+Updated: %s`,
+		routeTitle,
+		fromLocation, toLocation, timeFrom,
+		toLocation, fromLocation, timeTo,
+		timeFrom+timeTo,
+		vessels,
+		conditions,
+		time.Now().Format("15:04:05"),
+	)
+
+	return report, nil
 }
 
-func parseInt(s string) int {
-	if num, err := strconv.Atoi(strings.TrimSpace(s)); err == nil {
-		return num
+func main() {
+	routeID := "1951"
+	report, err := fetchRouteInfo(routeID)
+	if err != nil {
+		log.Fatal(err)
 	}
-	return 0
+	fmt.Println(report)
 }
