@@ -48,8 +48,8 @@ func eventHandler(client *whatsmeow.Client) func(interface{}) {
 			fmt.Println("Received a message!", message)
 
 			if message != "" {
-				dersa_info, _ := fetchRouteInfo("1951")
-				// response := fmt.Sprintf("You said: %s", message)
+				SANTOS_GUARUJA_ROUTE_CODE := "1951"
+				dersa_info, _ := fetchRouteInfo(SANTOS_GUARUJA_ROUTE_CODE)
 
 				userJID := types.JID{
 					User:   sender.User,
