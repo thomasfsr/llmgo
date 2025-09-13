@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -8,6 +9,7 @@ import (
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
+	"github.com/redis/go-redis/v9"
 )
 
 // parseInt safely converts string → int
@@ -56,6 +58,36 @@ Atualizado: %s`,
 	)
 
 	return report, nil
+}
+
+var rdb = redis.NewClient(&redis.Options{
+	Addr:     "localhost:6379",
+	Password: "",
+	DB:       0,
+})
+
+func getRouteInfoWithCache(routeID string, ctx context.Context) (string, error) {
+	// Try cache first
+	val, err := rdb.Get(ctx, routeID).Result()
+	if err == nil {
+		fmt.Println("✅ Got data from Redis cache")
+		return val, nil
+	}
+
+	// Cache miss → scrape
+	data, err := fetchRouteInfo(routeID)
+	if err != nil {
+		return "", err
+	}
+
+	// Store in Redis with 5-minute expiration
+	err = rdb.Set(ctx, routeID, data, 5*time.Minute).Err()
+	if err != nil {
+		return "", err
+	}
+
+	fmt.Println("🆕 Scraped new data and cached in Redis")
+	return data, nil
 }
 
 // func main() {

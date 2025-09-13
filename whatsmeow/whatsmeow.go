@@ -49,7 +49,7 @@ func eventHandler(client *whatsmeow.Client) func(interface{}) {
 
 			if message != "" {
 				SANTOS_GUARUJA_ROUTE_CODE := "1951"
-				dersa_info, _ := fetchRouteInfo(SANTOS_GUARUJA_ROUTE_CODE)
+				dersa_info, _ := getRouteInfoWithCache(SANTOS_GUARUJA_ROUTE_CODE, context.Background())
 
 				userJID := types.JID{
 					User:   sender.User,
