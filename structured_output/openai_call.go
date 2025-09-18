@@ -12,19 +12,6 @@ import (
 	"github.com/openai/openai-go/v2/option"
 )
 
-// A struct that will be converted to a Structured Outputs response schema
-// type HistoricalComputer struct {
-// 	Origin       Origin   `json:"origin" jsonschema_description:"The origin of the computer"`
-// 	Name         string   `json:"full_name" jsonschema_description:"The name of the device model"`
-// 	Legacy       string   `json:"legacy" jsonschema:"enum=positive,enum=neutral,enum=negative" jsonschema_description:"Its influence on the field of computing"`
-// 	NotableFacts []string `json:"notable_facts" jsonschema_description:"A few key facts about the computer"`
-// }
-
-// type Origin struct {
-// 	YearBuilt    int64  `json:"year_of_construction" jsonschema_description:"The year it was made"`
-// 	Organization string `json:"organization" jsonschema_description:"The organization that was in charge of its development"`
-// }
-
 type extractTask struct {
 	LabelTask       string `json:"label_task" jsonschema:"enum=query_data,enum=update,enum=chat" jsonschema_description:"The label of the task if it is quering database, updating the database or neither just chatting."`
 	TaskDescription string `json:"task_description" jsonschema_description:"The task with the main informations to execute the user request"`
@@ -50,16 +37,20 @@ func GenerateSchema[T any]() interface{} {
 var ListOfTasksSchema = GenerateSchema[ListOfTasks]()
 
 func main() {
+	question := "Add 5 kilograms of rice to my data and retrieves how many eggs are there"
+	ovlstate := ExtractTask(question, 1)
+	fmt.Println("STOP")
+	fmt.Print(ovlstate)
+}
+
+func ExtractTask(question string, user_id int) OverallState {
 	_ = godotenv.Load()
 	groq_key := os.Getenv("GROQ_API_KEY")
-
 	client := openai.NewClient(
 		option.WithAPIKey(groq_key),
 		option.WithBaseURL("https://api.groq.com/openai/v1"),
 	)
 	ctx := context.Background()
-
-	question := "Add 5 kilograms of rice to my data and retrieves how many eggs are there"
 
 	print("> ")
 	println(question)
@@ -100,5 +91,7 @@ func main() {
 	for i, task := range listoftasks.Tasks {
 		fmt.Printf("%v. %v\n", i+1, task.LabelTask)
 		fmt.Printf("%v. %v\n", i+1, task.TaskDescription)
+
 	}
+	return OverallState{user_id: user_id, user_input: question, task_list: listoftasks}
 }
