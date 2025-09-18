@@ -100,6 +100,5 @@ func main() {
 	for i, task := range listoftasks.Tasks {
 		fmt.Printf("%v. %v\n", i+1, task.LabelTask)
 		fmt.Printf("%v. %v\n", i+1, task.TaskDescription)
-
 	}
 }
