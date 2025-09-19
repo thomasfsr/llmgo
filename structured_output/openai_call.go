@@ -10,6 +10,7 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/openai/openai-go/v2"
 	"github.com/openai/openai-go/v2/option"
+	"github.com/redis/go-redis/v9"
 )
 
 func main() {
@@ -94,14 +95,23 @@ func ExtractTask(user_input string, thread_id int) OverallState {
 
 	}
 	user_message := Message(user_input)
-	return OverallState{user_id: thread_id, user_input: user_input, messages: []Message{user_message}, task_list: listoftasks}
+	return OverallState{ThreadID: thread_id, UserInput: user_input, Messages: []Message{user_message}, TaskList: listoftasks}
 }
 
-// var rdb = redis.NewClient(&redis.Options{
-// 	Addr:     "localhost:6379",
-// 	Password: "",
-// 	DB:       0})
+func SaveStateToRedis(ctx context.Context, client *redis.Client, state *OverallState) error {
+	data, err := json.Marshal(state)
+	if err != nil {
+		return err
+	}
+	return client.Set(ctx, fmt.Sprintf("state:%d", state.ThreadID), data, 0).Err()
+}
 
-// func getRouteInfoWithCache(routeID string, ctx context.Context) (string, error) {
-
-// }
+func LoadStateFromRedis(ctx context.Context, client *redis.Client, ThreadID int) (*OverallState, error) {
+	data, err := client.Get(ctx, fmt.Sprintf("state:%d", ThreadID)).Bytes()
+	if err != nil {
+		return nil, err
+	}
+	var state OverallState
+	err = json.Unmarshal(data, &state)
+	return &state, err
+}

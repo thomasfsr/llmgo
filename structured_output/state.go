@@ -3,8 +3,8 @@ package main
 type Message string
 
 type OverallState struct {
-	user_id    int
-	user_input string
-	messages   []Message
-	task_list  ListOfTasks
+	ThreadID  int
+	UserInput string
+	Messages  []Message
+	TaskList  ListOfTasks
 }
