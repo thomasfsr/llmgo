@@ -36,7 +36,7 @@ func GenerateSchema[T any]() interface{} {
 var ListOfTasksSchema = GenerateSchema[ListOfTasks]()
 
 func main() {
-	question := "Add 5 kilograms of rice to my data and retrieves how many eggs are there"
+	question := "Adicione 5 kilos de arroz e me traga quanto tenho de arroz"
 	ovlstate := ExtractTask(question, 1)
 	fmt.Println("STOP")
 	fmt.Println(ovlstate)
