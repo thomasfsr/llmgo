@@ -12,6 +12,13 @@ import (
 	"github.com/openai/openai-go/v2/option"
 )
 
+func main() {
+	question := "Adicione 5 kilos de arroz e me traga quanto tenho de arroz"
+	ovlstate := ExtractTask(question, 1)
+	fmt.Println("STOP")
+	fmt.Println(ovlstate)
+}
+
 type extractTask struct {
 	LabelTask       string `json:"label_task" jsonschema:"enum=query_data,enum=update,enum=chat" jsonschema_description:"The label of the task if it is quering database, updating the database or neither just chatting."`
 	TaskDescription string `json:"task_description" jsonschema_description:"The task with the main informations to execute the user request"`
@@ -35,14 +42,7 @@ func GenerateSchema[T any]() interface{} {
 
 var ListOfTasksSchema = GenerateSchema[ListOfTasks]()
 
-func main() {
-	question := "Adicione 5 kilos de arroz e me traga quanto tenho de arroz"
-	ovlstate := ExtractTask(question, 1)
-	fmt.Println("STOP")
-	fmt.Println(ovlstate)
-}
-
-func ExtractTask(user_input string, user_id int) OverallState {
+func ExtractTask(user_input string, thread_id int) OverallState {
 	_ = godotenv.Load()
 	groq_key := os.Getenv("GROQ_API_KEY")
 	client := openai.NewClient(
@@ -94,5 +94,14 @@ func ExtractTask(user_input string, user_id int) OverallState {
 
 	}
 	user_message := Message(user_input)
-	return OverallState{user_id: user_id, user_input: user_input, messages: []Message{user_message}, task_list: listoftasks}
+	return OverallState{user_id: thread_id, user_input: user_input, messages: []Message{user_message}, task_list: listoftasks}
 }
+
+// var rdb = redis.NewClient(&redis.Options{
+// 	Addr:     "localhost:6379",
+// 	Password: "",
+// 	DB:       0})
+
+// func getRouteInfoWithCache(routeID string, ctx context.Context) (string, error) {
+
+// }
