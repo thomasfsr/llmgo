@@ -79,14 +79,12 @@ func ExtractTask(user_input string, thread_id int) OverallState {
 		panic(err.Error())
 	}
 
-	// The model responds with a JSON string, so parse it into a struct
-	var listoftasks ListOfTasks
+	listoftasks := ListOfTasks{}
 	err = json.Unmarshal([]byte(chat.Choices[0].Message.Content), &listoftasks)
 	if err != nil {
 		panic(err.Error())
 	}
 
-	// Use the model's structured response with a native Go struct
 	fmt.Printf("tasks: %v\n", listoftasks.Tasks)
 
 	for _, task := range listoftasks.Tasks {
@@ -111,7 +109,7 @@ func LoadStateFromRedis(ctx context.Context, client *redis.Client, ThreadID int)
 	if err != nil {
 		return nil, err
 	}
-	var state OverallState
+	state := OverallState{}
 	err = json.Unmarshal(data, &state)
 	return &state, err
 }
