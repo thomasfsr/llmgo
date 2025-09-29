@@ -14,7 +14,7 @@ import (
 )
 
 func main() {
-	question := "Adicione 5 kilos de arroz e me traga quanto tenho de arroz"
+	question := "Chest Press, 5 sets of 10 reps with 22 kgs."
 	ovlstate := ExtractTask(question, 1)
 	fmt.Println("STOP")
 	fmt.Println(ovlstate)
@@ -29,6 +29,20 @@ type ListOfTasks struct {
 	Tasks []extractTask `json:"tasks" jsonschema_description:"List of tasks extracted from the user input."`
 }
 
+type ListOfExercises struct {
+	Exercises []ExerciseData `json:"exercises" jsonschema_description:"List of exercises, each exercise with its on sets."`
+}
+
+type ExerciseData struct {
+	Exercise     string        `json:"exercise" jsonschema_description:"Exercise name"`
+	ExerciseSets []ExerciseSet `json:"exercise_sets" jsonschema_description:"the sets of the exercise."`
+}
+
+type ExerciseSet struct {
+	NReps  uint8   `json:"n_reps" jsonschema_description:"number of reps of the exercise set"`
+	Weight float32 `json:"weight" jsonschema_description:"weight of the exercise set in kilograms (kg)"`
+}
+
 func GenerateSchema[T any]() interface{} {
 	// Structured Outputs uses a subset of JSON schema
 	// These flags are necessary to comply with the subset
@@ -41,7 +55,7 @@ func GenerateSchema[T any]() interface{} {
 	return schema
 }
 
-var ListOfTasksSchema = GenerateSchema[ListOfTasks]()
+var ListOfExercisesSchema = GenerateSchema[ListOfExercises]()
 
 func ExtractTask(user_input string, thread_id int) OverallState {
 	_ = godotenv.Load()
@@ -56,16 +70,16 @@ func ExtractTask(user_input string, thread_id int) OverallState {
 	println(user_input)
 
 	schemaParam := openai.ResponseFormatJSONSchemaJSONSchemaParam{
-		Name:        "extract_tasks",
-		Description: openai.String("Tasks extracted from users input"),
-		Schema:      ListOfTasksSchema,
+		Name:        "exercises",
+		Description: openai.String("Exercises extracted from users input"),
+		Schema:      ListOfExercisesSchema,
 		Strict:      openai.Bool(true),
 	}
 
 	// Query the Chat Completions API
 	chat, err := client.Chat.Completions.New(ctx, openai.ChatCompletionNewParams{
 		Messages: []openai.ChatCompletionMessageParamUnion{
-			openai.SystemMessage("You are a assistant that parses the requests of the user for another agent to process them."),
+			openai.SystemMessage("You should parse the user input to extract information about workout session. You should indentify the exercise(s) sets, each set has its own reps and weight."),
 			openai.UserMessage(user_input),
 		},
 		ResponseFormat: openai.ChatCompletionNewParamsResponseFormatUnion{
@@ -79,21 +93,21 @@ func ExtractTask(user_input string, thread_id int) OverallState {
 		panic(err.Error())
 	}
 
-	listoftasks := ListOfTasks{}
-	err = json.Unmarshal([]byte(chat.Choices[0].Message.Content), &listoftasks)
+	listofexercises := ListOfExercises{}
+	err = json.Unmarshal([]byte(chat.Choices[0].Message.Content), &listofexercises)
 	if err != nil {
 		panic(err.Error())
 	}
 
-	fmt.Printf("tasks: %v\n", listoftasks.Tasks)
+	fmt.Printf("tasks: %v\n", listofexercises.Exercises)
 
-	for _, task := range listoftasks.Tasks {
-		fmt.Printf("- %v\n", task.LabelTask)
-		fmt.Printf("- %v\n", task.TaskDescription)
+	for _, exercise := range listofexercises.Exercises {
+		fmt.Printf("- %v\n", exercise.Exercise)
+		fmt.Printf("- %v\n", exercise.ExerciseSets)
 
 	}
 	user_message := Message(user_input)
-	return OverallState{ThreadID: thread_id, UserInput: user_input, Messages: []Message{user_message}, TaskList: listoftasks}
+	return OverallState{ThreadID: thread_id, UserInput: user_input, Messages: []Message{user_message}, ExerciseList: listofexercises}
 }
 
 func SaveStateToRedis(ctx context.Context, client *redis.Client, state *OverallState) error {
