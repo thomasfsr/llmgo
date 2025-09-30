@@ -23,6 +23,7 @@ services:
 
     volumes:
       - postgres-workout-volume:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
 
 volumes:
   redis-data:
