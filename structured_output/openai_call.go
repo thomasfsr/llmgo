@@ -54,7 +54,7 @@ func GenerateSchema[T any]() interface{} {
 
 var ListOfExercisesSchema = GenerateSchema[ListOfExercises]()
 
-func ExtractTask(user_input string, thread_id int) OverallState {
+func ExtractTask(user_input string, user_id int) OverallState {
 	_ = godotenv.Load()
 	groq_key := os.Getenv("GROQ_API_KEY")
 	client := openai.NewClient(
@@ -103,7 +103,7 @@ func ExtractTask(user_input string, thread_id int) OverallState {
 
 	}
 
-	return OverallState{ThreadID: thread_id, UserInput: user_input, Messages: []string{user_input}, ExerciseList: listofexercises}
+	return OverallState{UserID: user_id, UserInput: user_input, Messages: []string{user_input}, ExerciseList: listofexercises}
 }
 
 // func SaveStateToRedis(ctx context.Context, client *redis.Client, state *OverallState) error {

@@ -7,9 +7,9 @@ CREATE TABLE IF NOT EXISTS users (
 
 CREATE TABLE IF NOT EXISTS workout_sets (
     set_id SERIAL PRIMARY KEY,
+    user_id INT,
     exercise VARCHAR(100),
     created_at TIMESTAMP,
-    user_id INT,
     reps SMALLINT,
     weight SMALLINT 
 )

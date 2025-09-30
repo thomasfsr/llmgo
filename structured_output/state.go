@@ -5,7 +5,7 @@ import (
 )
 
 type OverallState struct {
-	ThreadID     int
+	UserID       int
 	UserInput    string
 	Messages     []string
 	ExerciseList ListOfExercises
