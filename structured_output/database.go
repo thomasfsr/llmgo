@@ -14,9 +14,7 @@ type Database struct {
 	Pool *pgxpool.Pool
 }
 
-// NewDatabase initializes the connection pool
 func NewDatabase() *Database {
-	// Example with env vars
 	user := os.Getenv("POSTGRES_USER")
 	pass := os.Getenv("POSTGRES_PASSWORD")
 	host := "localhost"
@@ -30,8 +28,6 @@ func NewDatabase() *Database {
 	if err != nil {
 		log.Fatalf("Unable to parse config: %v", err)
 	}
-
-	// Optional: tune pool settings
 	cfg.MaxConns = 10
 	cfg.MinConns = 2
 	cfg.MaxConnLifetime = time.Hour
