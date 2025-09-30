@@ -10,7 +10,6 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/openai/openai-go/v2"
 	"github.com/openai/openai-go/v2/option"
-	"github.com/redis/go-redis/v9"
 )
 
 func main() {
@@ -44,8 +43,6 @@ type ExerciseSet struct {
 }
 
 func GenerateSchema[T any]() interface{} {
-	// Structured Outputs uses a subset of JSON schema
-	// These flags are necessary to comply with the subset
 	reflector := jsonschema.Reflector{
 		AllowAdditionalProperties: false,
 		DoNotReference:            true,
@@ -76,7 +73,6 @@ func ExtractTask(user_input string, thread_id int) OverallState {
 		Strict:      openai.Bool(true),
 	}
 
-	// Query the Chat Completions API
 	chat, err := client.Chat.Completions.New(ctx, openai.ChatCompletionNewParams{
 		Messages: []openai.ChatCompletionMessageParamUnion{
 			openai.SystemMessage(`You should parse the user input to extract information about workout session.
@@ -86,7 +82,6 @@ func ExtractTask(user_input string, thread_id int) OverallState {
 		ResponseFormat: openai.ChatCompletionNewParamsResponseFormatUnion{
 			OfJSONSchema: &openai.ResponseFormatJSONSchemaParam{JSONSchema: schemaParam},
 		},
-		// Only certain models can perform structured outputs
 		Model: "moonshotai/kimi-k2-instruct-0905",
 	})
 
@@ -111,20 +106,20 @@ func ExtractTask(user_input string, thread_id int) OverallState {
 	return OverallState{ThreadID: thread_id, UserInput: user_input, Messages: []string{user_input}, ExerciseList: listofexercises}
 }
 
-func SaveStateToRedis(ctx context.Context, client *redis.Client, state *OverallState) error {
-	data, err := json.Marshal(state)
-	if err != nil {
-		return err
-	}
-	return client.Set(ctx, fmt.Sprintf("state:%d", state.ThreadID), data, 0).Err()
-}
+// func SaveStateToRedis(ctx context.Context, client *redis.Client, state *OverallState) error {
+// 	data, err := json.Marshal(state)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	return client.Set(ctx, fmt.Sprintf("state:%d", state.ThreadID), data, 0).Err()
+// }
 
-func LoadStateFromRedis(ctx context.Context, client *redis.Client, ThreadID int) (*OverallState, error) {
-	data, err := client.Get(ctx, fmt.Sprintf("state:%d", ThreadID)).Bytes()
-	if err != nil {
-		return nil, err
-	}
-	state := OverallState{}
-	err = json.Unmarshal(data, &state)
-	return &state, err
-}
+// func LoadStateFromRedis(ctx context.Context, client *redis.Client, ThreadID int) (*OverallState, error) {
+// 	data, err := client.Get(ctx, fmt.Sprintf("state:%d", ThreadID)).Bytes()
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	state := OverallState{}
+// 	err = json.Unmarshal(data, &state)
+// 	return &state, err
+// }
