@@ -106,8 +106,8 @@ func ExtractTask(user_input string, thread_id int) OverallState {
 		fmt.Printf("- %v\n", exercise.ExerciseSets)
 
 	}
-	user_message := Message(user_input)
-	return OverallState{ThreadID: thread_id, UserInput: user_input, Messages: []Message{user_message}, ExerciseList: listofexercises}
+
+	return OverallState{ThreadID: thread_id, UserInput: user_input, Messages: []string{user_input}, ExerciseList: listofexercises}
 }
 
 func SaveStateToRedis(ctx context.Context, client *redis.Client, state *OverallState) error {

@@ -4,12 +4,10 @@ import (
 	"sync"
 )
 
-type Message string
-
 type OverallState struct {
 	ThreadID     int
 	UserInput    string
-	Messages     []Message
+	Messages     []string
 	ExerciseList ListOfExercises
 }
 
