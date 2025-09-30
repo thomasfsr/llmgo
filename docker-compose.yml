@@ -3,7 +3,6 @@ name: llmgo
 services:
   redis-workout:
     image: redis:8.2.1-alpine3.22
-    container_name: redis
     ports:
       - "6379:6379"
     volumes:
