@@ -43,7 +43,7 @@ type ExerciseSet struct {
 	Weight float32 `json:"weight" jsonschema_description:"weight of the exercise set in kilograms (kg)"`
 }
 
-func GenerateSchema[T any]() interface{} {
+func GenerateSchema[T any]() *jsonschema.Schema {
 	// Structured Outputs uses a subset of JSON schema
 	// These flags are necessary to comply with the subset
 	reflector := jsonschema.Reflector{
