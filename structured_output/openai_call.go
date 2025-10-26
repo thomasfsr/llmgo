@@ -10,13 +10,11 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/openai/openai-go/v2"
 	"github.com/openai/openai-go/v2/option"
-	"github.com/redis/go-redis/v9"
 )
 
 func main() {
 	question := "Chest Press, 5 sets of 10 reps with 22 kgs."
 	ovlstate := ExtractTask(question, 1)
-	fmt.Println("STOP")
 	fmt.Println(ovlstate)
 }
 
@@ -44,8 +42,6 @@ type ExerciseSet struct {
 }
 
 func GenerateSchema[T any]() *jsonschema.Schema {
-	// Structured Outputs uses a subset of JSON schema
-	// These flags are necessary to comply with the subset
 	reflector := jsonschema.Reflector{
 		AllowAdditionalProperties: false,
 		DoNotReference:            true,
@@ -76,7 +72,6 @@ func ExtractTask(user_input string, thread_id int) OverallState {
 		Strict:      openai.Bool(true),
 	}
 
-	// Query the Chat Completions API
 	chat, err := client.Chat.Completions.New(ctx, openai.ChatCompletionNewParams{
 		Messages: []openai.ChatCompletionMessageParamUnion{
 			openai.SystemMessage("You should parse the user input to extract information about workout session. You should indentify the exercise(s) sets, each set has its own reps and weight."),
@@ -85,16 +80,17 @@ func ExtractTask(user_input string, thread_id int) OverallState {
 		ResponseFormat: openai.ChatCompletionNewParamsResponseFormatUnion{
 			OfJSONSchema: &openai.ResponseFormatJSONSchemaParam{JSONSchema: schemaParam},
 		},
-		// Only certain models can perform structured outputs
 		Model: "moonshotai/kimi-k2-instruct-0905",
 	})
 
 	if err != nil {
 		panic(err.Error())
 	}
+	chat_response_content := &chat.Choices[0].Message.Content
+	fmt.Println(*chat_response_content)
 
 	listofexercises := ListOfExercises{}
-	err = json.Unmarshal([]byte(chat.Choices[0].Message.Content), &listofexercises)
+	err = json.Unmarshal([]byte(*chat_response_content), &listofexercises)
 	if err != nil {
 		panic(err.Error())
 	}
@@ -104,26 +100,21 @@ func ExtractTask(user_input string, thread_id int) OverallState {
 	for _, exercise := range listofexercises.Exercises {
 		fmt.Printf("- %v\n", exercise.Exercise)
 		fmt.Printf("- %v\n", exercise.ExerciseSets)
-
 	}
+
+	chat2, err := client.Chat.Completions.New(ctx, openai.ChatCompletionNewParams{
+		Messages: []openai.ChatCompletionMessageParamUnion{
+			openai.SystemMessage("Confirm to the user his training set was written in the database."),
+			openai.UserMessage(user_input),
+		},
+		Model: "moonshotai/kimi-k2-instruct-0905",
+	})
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Println("->"+string(*chat_response_content))
+	fmt.Println("->"+string(chat2.Choices[0].Message.Content))
+
 	user_message := Message(user_input)
 	return OverallState{ThreadID: thread_id, UserInput: user_input, Messages: []Message{user_message}, ExerciseList: listofexercises}
-}
-
-func SaveStateToRedis(ctx context.Context, client *redis.Client, state *OverallState) error {
-	data, err := json.Marshal(state)
-	if err != nil {
-		return err
-	}
-	return client.Set(ctx, fmt.Sprintf("state:%d", state.ThreadID), data, 0).Err()
-}
-
-func LoadStateFromRedis(ctx context.Context, client *redis.Client, ThreadID int) (*OverallState, error) {
-	data, err := client.Get(ctx, fmt.Sprintf("state:%d", ThreadID)).Bytes()
-	if err != nil {
-		return nil, err
-	}
-	state := OverallState{}
-	err = json.Unmarshal(data, &state)
-	return &state, err
 }

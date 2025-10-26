@@ -20,8 +20,8 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-func eventHandler(client *whatsmeow.Client) func(interface{}) {
-	return func(evt interface{}) {
+func eventHandler(client *whatsmeow.Client) func(any) {
+	return func(evt any) {
 		switch v := evt.(type) {
 		case *events.Message:
 			var message string
