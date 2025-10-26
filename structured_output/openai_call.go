@@ -38,6 +38,7 @@ func ExtractTask(user_input string, thread_id int) OverallState {
 		option.WithBaseURL("https://api.groq.com/openai/v1"),
 	)
 	ctx := context.Background()
+	ModelName := "moonshotai/kimi-k2-instruct-0905"
 
 	print("> ")
 	println(user_input)
@@ -57,7 +58,7 @@ func ExtractTask(user_input string, thread_id int) OverallState {
 		ResponseFormat: openai.ChatCompletionNewParamsResponseFormatUnion{
 			OfJSONSchema: &openai.ResponseFormatJSONSchemaParam{JSONSchema: schemaParam},
 		},
-		Model: "moonshotai/kimi-k2-instruct-0905",
+		Model: ModelName,
 	})
 
 	if err != nil {
@@ -84,7 +85,7 @@ func ExtractTask(user_input string, thread_id int) OverallState {
 			openai.SystemMessage("Confirm to the user his training set was written in the database."),
 			openai.UserMessage(user_input),
 		},
-		Model: "moonshotai/kimi-k2-instruct-0905",
+		Model: ModelName,
 	})
 	if err != nil {
 		fmt.Println(err)
