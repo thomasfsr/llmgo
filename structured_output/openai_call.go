@@ -10,6 +10,7 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/openai/openai-go/v2"
 	"github.com/openai/openai-go/v2/option"
+	// "https://github.com/mattn/go-sqlite3"
 )
 
 func main() {
