@@ -16,6 +16,7 @@ CREATE TABLE IF NOT EXISTS messages (
 
 CREATE TABLE IF NOT EXISTS exercise_sets (
   id INTEGER PRIMARY KEY AUTOINCREMENT, 
+  user_id INTEGER,
   exercise CHAR(100),
   weight INTEGER,
   reps INTEGER,
