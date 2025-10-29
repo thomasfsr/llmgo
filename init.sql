@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS messages (
   created_at TIMESTAMP,
 );
 
-CREATE TABLE IF NOT EXISTS exercise_sets (
+CREATE TABLE IF NOT EXISTS workout_sets (
   id INTEGER PRIMARY KEY AUTOINCREMENT, 
   user_id INTEGER,
   exercise CHAR(100),
