@@ -10,7 +10,7 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/openai/openai-go/v2"
 	"github.com/openai/openai-go/v2/option"
-	// "https://github.com/mattn/go-sqlite3"
+	"github.com/mattn/go-sqlite3"
 )
 
 func main() {
@@ -96,4 +96,64 @@ func ExtractTask(user_input string, thread_id int) OverallState {
 
 	user_message := Message(user_input)
 	return OverallState{ThreadID: thread_id, UserInput: user_input, Messages: []Message{user_message}, ExerciseList: listofexercises}
+}
+
+func createDatabase(dbName, initSQLPath string) (*sql.DB, error) {
+    db, err := sql.Open("sqlite3", dbName)
+    if err != nil {
+        return nil, fmt.Errorf("failed to open database: %v", err)
+    }
+
+    if err := db.Ping(); err != nil {
+        return nil, fmt.Errorf("failed to connect to database: %v", err)
+    }
+
+    if err := executeInitSQL(db, initSQLPath); err != nil {
+        return nil, err
+    }
+
+    fmt.Printf("Database '%s' initialized successfully\n", dbName)
+    return db, nil
+}
+
+func executeInitSQL(db *sql.DB, initSQLPath string) error {
+    if _, err := os.Stat(initSQLPath); os.IsNotExist(err) {
+        return fmt.Errorf("init SQL file not found: %s", initSQLPath)
+    }
+
+    sqlBytes, err := os.ReadFile(initSQLPath)
+    if err != nil {
+        return fmt.Errorf("failed to read init SQL file: %v", err)
+    }
+
+    sqlContent := string(sqlBytes)
+    statements := strings.Split(sqlContent, ";")
+
+    for i, stmt := range statements {
+        stmt = strings.TrimSpace(stmt)
+        if stmt == "" {
+            continue
+        }
+
+        _, err := db.Exec(stmt)
+        if err != nil {
+            return fmt.Errorf("failed to execute statement %d: %v\nStatement: %s", i+1, err, stmt)
+        }
+    }
+
+    fmt.Printf("Executed initialization script: %s\n", initSQLPath)
+    return nil
+}
+
+func main() {
+    dbName := "myapp.db"
+    initSQLPath := "init.sql"
+
+    db, err := createDatabase(dbName, initSQLPath)
+    if err != nil {
+        log.Fatal(err)
+    }
+    defer db.Close()
+
+    fmt.Println("Database is ready!")
 }

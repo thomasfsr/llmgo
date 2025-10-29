@@ -1,23 +1,23 @@
 CREATE TABLE IF NOT EXISTS users ( 
-  id SERIAL PRIMARY KEY, 
+  id PRIMARY KEY AUTOINCREMENT, 
   first_name CHAR(20), 
   last_name CHAR(50), 
-  whatsapp BIGINT, 
+  whatsapp INTEGER, 
   active BOOLEAN, 
   created_at TIMESTAMP,
-)
+);
 
 CREATE TABLE IF NOT EXISTS messages (
-  id SERIAL PRIMARY KEY,
-  user_id INT,
+  id INTEGER PRIMARY KEY AUTOINCREMENT, 
+  user_id INTEGER,
   message CHAR(100),
   created_at TIMESTAMP,
-)
+);
 
 CREATE TABLE IF NOT EXISTS exercise_sets (
-  id SERIAL PRIMARY KEY,
+  id INTEGER PRIMARY KEY AUTOINCREMENT, 
   exercise CHAR(100),
-  weight INT,
-  reps INT,
+  weight INTEGER,
+  reps INTEGER,
   created_at TIMESTAMP,
-) 
+); 
