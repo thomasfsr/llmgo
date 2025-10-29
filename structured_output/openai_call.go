@@ -15,7 +15,7 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 type application {
-	db *sql.Database
+	db *sql.
 }
 func main() {
 	app = 
