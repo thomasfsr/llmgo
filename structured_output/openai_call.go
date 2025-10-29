@@ -5,12 +5,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"strings"
+	"database/sql"
 
 	"github.com/invopop/jsonschema"
 	"github.com/joho/godotenv"
 	"github.com/openai/openai-go/v2"
 	"github.com/openai/openai-go/v2/option"
-	"github.com/mattn/go-sqlite3"
+	_ "github.com/mattn/go-sqlite3"
 )
 
 func main() {
@@ -143,17 +145,4 @@ func executeInitSQL(db *sql.DB, initSQLPath string) error {
 
     fmt.Printf("Executed initialization script: %s\n", initSQLPath)
     return nil
-}
-
-func main() {
-    dbName := "myapp.db"
-    initSQLPath := "init.sql"
-
-    db, err := createDatabase(dbName, initSQLPath)
-    if err != nil {
-        log.Fatal(err)
-    }
-    defer db.Close()
-
-    fmt.Println("Database is ready!")
 }
