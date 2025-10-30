@@ -58,7 +58,9 @@ func ExtractTask(user_input string, thread_id int) OverallState {
 
 	chat, err := client.Chat.Completions.New(ctx, openai.ChatCompletionNewParams{
 		Messages: []openai.ChatCompletionMessageParamUnion{
-			openai.SystemMessage("You should parse the user input to extract information about workout session. You should indentify the exercise(s) sets, each set has its own reps and weight."),
+			openai.SystemMessage(
+				`You should parse the user input to extract information  
+				about workout session. You should indentify the exercise(s) sets, each set has its own reps and weight.`),
 			openai.UserMessage(user_input),
 		},
 		ResponseFormat: openai.ChatCompletionNewParamsResponseFormatUnion{
