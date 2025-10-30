@@ -14,12 +14,12 @@ import (
 	"github.com/openai/openai-go/v2/option"
 	_ "github.com/mattn/go-sqlite3"
 )
-type application {
-	db *sql.
+type Application struct {
+	db *sql.DB
 }
+
 func main() {
-	app = 
-	question := "Chest Press, 5 sets of 10 reps with 22 kgs."
+ 	question := "Chest Press, 5 sets of 10 reps with 22 kgs."
 	ovlstate := ExtractTask(question, 1)
 	fmt.Println(ovlstate)
 }
