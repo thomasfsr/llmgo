@@ -14,9 +14,6 @@ import (
 	"github.com/openai/openai-go/v2/option"
 	_ "github.com/mattn/go-sqlite3"
 )
-type Application struct {
-	db *sql.DB
-}
 
 func main() {
  	question := "Chest Press, 5 sets of 10 reps with 22 kgs."
@@ -60,7 +57,8 @@ func ExtractTask(user_input string, thread_id int) OverallState {
 		Messages: []openai.ChatCompletionMessageParamUnion{
 			openai.SystemMessage(
 				`You should parse the user input to extract information  
-				about workout session. You should indentify the exercise(s) sets, each set has its own reps and weight.`),
+				about workout session. You should indentify the exercise(s)
+				sets, each set has its own reps and weight.`),
 			openai.UserMessage(user_input),
 		},
 		ResponseFormat: openai.ChatCompletionNewParamsResponseFormatUnion{
@@ -102,7 +100,10 @@ func ExtractTask(user_input string, thread_id int) OverallState {
 	fmt.Println("->"+string(chat2.Choices[0].Message.Content))
 
 	user_message := Message(user_input)
-	return OverallState{ThreadID: thread_id, UserInput: user_input, Messages: []Message{user_message}, ExerciseList: listofexercises}
+	return OverallState{ThreadID: thread_id, 
+		UserInput: user_input,
+		Messages: []Message{user_message},
+		ExerciseList: listofexercises}
 }
 
 func createDatabase(dbName, initSQLPath string) (*sql.DB, error) {
